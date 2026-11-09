@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+
+<html lang="ru">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta name="theme-color" content="#101827">
+
+<title>АЛЬФМОГ — цифровой мир</title>
+
+<style>
+
+:root {
+
+ --bg:#0b1220;--panel:#141f31;--card:#1c2b42;
+
+ --text:#f4f7ff;--muted:#9aabc2;--accent:#35d084;
+
+ --border:#ffffff18;
+
+}
+
+body.light {
+
+ --bg:#edf2f8;--panel:#fff;--card:#f8fafc;
+
+ --text:#172338;--muted:#637087;--border:#17233820;
+
+}
+
+*{box-sizing:border-box}
+
+body {
+
+ margin:0;background:var(--bg);color:var(--text);
+
+ font-family:Arial,sans-serif;transition:.2s;
+
+}
+
+header {
+
+ position:sticky;top:0;z-index:5;
+
+ background:var(--panel);padding:14px 18px;
+
+ display:flex;align-items:center;gap:12px;
+
+ border-bottom:1px solid var(--border);
+
+}
+
+.logo {
+
+ width:46px;height:46px;border-radius:14px;
+
+ display:grid;place-items:center;color:white;
+
+ font-size:26px;font-weight:bold;
+
+ background:linear-gradient(135deg,#35d084,#1684d8);
+
+}
+
+header h1{font-size:21px;margin:0}
+
+header small{color:var(--muted)}
+
+main{max-width:1050px;margin:auto;padding:18px}
+
+.hero {
+
+ padding:28px;border-radius:20px;margin-bottom:18px;
+
+ background:linear-gradient(120deg,#124c49,#183d75);
+
+ color:white;
+
+}
+
+.hero h2{font-size:27px;margin:0 0 8px}
+
+.hero p{margin:0;color:#d9e9f8}
+
+.search {
+
+ width:100%;padding:15px;border:1px solid var(--border);
+
+ border-radius:13px;background:var(--panel);
+
+ color:var(--text);font-size:16px;margin:5px 0 18px;
+
+}
+
+.grid {
+
+ display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));
+
+ gap:12px;
+
+}
+
+.tile {
+
+ background:var(--card);color:var(--text);
+
+ border:1px solid var(--border);border-radius:16px;
+
+ padding:17px;text-align:left;min-height:110px;
+
+ cursor:pointer;font-size:15px;
+
+}
+
+.tile:hover{border-color:var(--accent)}
+
+.emoji{display:block;font-size:27px;margin-bottom:12px}
+
+button {
+
+ border:0;border-radius:11px;padding:12px 16px;
+
+ background:var(--card);color:var(--text);
+
+ cursor:pointer;font-size:15px;margin:4px;
+
+}
+
+.primary{background:var(--accent);color:#082719;font-weight:bold}
+
+.back{background:#34445b;color:white}
+
+.panel {
+
+ background:var(--panel);border:1px solid var(--border);
+
+ border-radius:16px;padding:18px;margin:12px 0;
+
+}
+
+.panel h3{margin-top:0}
+
+input,select,textarea {
+
+ background:var(--card);color:var(--text);
+
+ border:1px solid var(--border);border-radius:10px;
+
+ padding:12px;font-size:16px;max-width:100%;
+
+}
+
+input,textarea{width:100%;margin:6px 0}
+
+.hidden{display:none!important}
+
+.muted{color:var(--muted)}
+
+footer{text-align:center;padding:30px;color:var(--muted)}
+
+.board{display:grid;grid-template-columns:repeat(3,1fr);max-width:255px;gap:5px}
+
+.cell{height:80px;font-size:27px;background:var(--card)}
+
+.gamegrid{display:grid;grid-template-columns:repeat(4,65px);gap:5px}
+
+.gamecell {
+
+ height:65px;display:grid;place-items:center;
+
+ background:var(--card);border-radius:10px;font-size:22px;font-weight:bold;
+
+}
+
+a{color:var(--accent)}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+ <div class="logo">А</div>
+
+ <div>
+
+  <h1>АЛЬФМОГ</h1>
+
+  <small id="subtitle">Твой цифровой мир</small>
+
+ </div>
+
+</header>
+
+<main>
+
+<section id="home">
+
+ <div class="hero">
+
+  <h2 id="welcome">Добро пожаловать в АЛЬФМОГ!</h2>
+
+  <p id="description">Знания, игры, открытия и полезные инструменты.</p>
+
+ </div>
+
+ <input class="search" id="search" placeholder="🔎 Поиск разделов..." oninput="renderTiles()">
+
+ <div class="grid" id="tiles"></div>
+
+</section>
+
+<section id="content" class="hidden">
+
+ <button class="back" onclick="goHome()">← Главная</button>
+
+ <div id="page"></div>
+
+</section>
+
+</main>
+
+<footer>АЛЬФМОГ © 2026</footer>
+
+<script>
+
+const sections=[
+
+ ["🌍","Энциклопедия стран","countries"],
+
+ ["🔢","Судоку","sudoku"],
+
+ ["💣","Сапёр","mines"],
+
+ ["🚀","Космическая станция","space"],
+
+ ["🌐","Мировые события","news"],
+
+ ["💰","Финансы","finance"],
+
+ ["📹","Камеры мира","cameras"],
+
+ ["🎓","Образование","education"],
+
+ ["🐍","Змейка","snake"],
+
+ ["♟️","Шашки","checkers"],
+
+ ["🏳️","Угадай флаг","flags"],
+
+ ["🔲","2048","game2048"],
+
+ ["⭕","Крестики-нолики","tic"],
+
+ ["🕒","Мировые часы","clocks"],
+
+ ["🌤️","Погода","weather"],
+
+ ["🌅","Восход и закат","sun"],
+
+ ["📅","Календарь","calendar"],
+
+ ["📊","Статистика","stats"],
+
+ ["🔤","Переводчик","translate"],
+
+ ["🚩","Атлас флагов","atlas"],
+
+ ["🌧️","Карта осадков","rain"],
+
+ ["🗺️","Карты мира","maps"],
+
+ ["🚦","Дорожная обстановка","traffic"],
+
+ ["🛡️","Безопасность","safety"]
+
+];
+
+let language="ru",visits=0;
+
+function renderTiles(){
+
+ const q=document.getElementById("search").value.toLowerCase();
+
+ document.getElementById("tiles").innerHTML=
+
+ sections.filter(s=>s[1].toLowerCase().includes(q))
+
+ .map(s=>`<button class="tile" onclick="openSection('${s[2]}')">
+
+ <span class="emoji">${s[0]}</span>${s[1]}</button>`).join("")+
+
+ `<button class="tile" onclick="settings()"><span class="emoji">⚙️</span>Настройки</button>`;
+
+}
+
+function goHome(){
+
+ document.getElementById("home").classList.remove("hidden");
+
+ document.getElementById("content").classList.add("hidden");
+
+}
+
+function showPage(title,html){
+
+ document.getElementById("home").classList.add("hidden");
+
+ document.getElementById("content").classList.remove("hidden");
+
+ document.getElementById("page").innerHTML=`<h2>${title}</h2>${html}`;
+
+}
+
+function openSection(id){
+
+ visits++;
+
+ const s=sections.find(x=>x[2]===id);
+
+ const p=document.getElementById("page");
+
+ document.getElementById("home").classList.add("hidden");
+
+ document.getElementById("content").classList.remove("hidden");
+
+ p.innerHTML=`<h2>${s[0]} ${s[1]}</h2>`;
+
+ if(id==="safety") safety(p);
+
+ else if(id==="countries") countries(p);
+
+ else if(id==="tic") tic(p);
+
+ else if(id==="clocks") clocks(p);
+
+ else if(id==="calendar") calendar(p);
+
+ else if(id==="game2048") game2048(p);
+
+ else if(id==="flags") flags(p);
+
+ else if(id==="atlas") atlas(p);
+
+ else if(id==="stats") p.innerHTML+=`<div class="panel">Открыто разделов: ${visits}</div>`;
+
+ else if(id==="maps") p.innerHTML+='<div class="panel"><a target="_blank" href="https://www.openstreetmap.org/">Открыть карту мира ↗</a></div>';
+
+ else if(id==="rain") p.innerHTML+='<div class="panel"><a target="_blank" href="https://www.windy.com/">Открыть карту погоды и осадков ↗</a></div>';
+
+ else if(id==="traffic") p.innerHTML+='<div class="panel"><a target="_blank" href="https://www.google.com/maps">Открыть дорожную карту ↗</a></div>';
+
+ else if(id==="translate") p.innerHTML+='<div class="panel"><a target="_blank" href="https://translate.google.com/">Открыть переводчик ↗</a></div>';
+
+ else if(id==="weather") p.innerHTML+='<div class="panel"><a target="_blank" href="https://open-meteo.com/">Источник прогноза погоды ↗</a><p>Для прогноза в реальном времени нужно подключить погодные данные.</p></div>';
+
+ else if(id==="news") p.innerHTML+='<div class="panel"><a target="_blank" href="https://www.bbc.com/news">BBC News ↗</a><p>Мировые события и новости.</p></div>';
+
+ else if(id==="finance") p.innerHTML+='<div class="panel"><a target="_blank" href="https://www.xe.com/">Курсы валют ↗</a></div>';
+
+ else if(id==="cameras") p.innerHTML+='<div class="panel"><a target="_blank" href="https://www.skylinewebcams.com/">Публичные камеры мира ↗</a></div>';
+
+ else if(id==="space") p.innerHTML+='<div class="panel"><h3>🚀 Космос</h3><p>Изучай планеты, звёзды, галактики и космические миссии.</p><a target="_blank" href="https://science.nasa.gov/">Материалы NASA ↗</a></div>';
+
+ else if(id==="education") p.innerHTML+='<div class="panel"><h3>🎓 Образование</h3><p>Математика, языки, история, география, наука и технологии.</p></div>';
+
+ else if(id==="sun") p.innerHTML+='<div class="panel"><p>Время восхода и заката зависит от местоположения. Проверь данные для своего города.</p><a target="_blank" href="https://www.timeanddate.com/sun/">Восход и закат ↗</a></div>';
+
+ else if(id==="sudoku") sudoku(p);
+
+ else if(id==="mines") mines(p);
+
+ else if(id==="snake") snake(p);
+
+ else if(id==="checkers") checkers(p);
+
+}
+
+function safety(p){
+
+ p.innerHTML+=`
+
+ <div class="panel">
+
+  <h3>🚨 Что делать при воздушной тревоге?</h3>
+
+  <p class="muted">Порядок действий при сигнале опасности.</p>
+
+  <ol>
+
+   <li>Сохраняй спокойствие и не игнорируй сигнал.</li>
+
+   <li>Немедленно направляйся в ближайшее официальное укрытие.</li>
+
+   <li>Не пользуйся лифтом. Отойди от окон и стеклянных дверей.</li>
+
+   <li>Если рядом есть возможность, возьми телефон, документы, воду и необходимые лекарства. Не задерживайся ради вещей.</li>
+
+   <li>Следи за сообщениями официальных служб и местных властей.</li>
+
+   <li>Оставайся в укрытии до официального сообщения об окончании тревоги.</li>
+
+   <li>Если добраться до укрытия невозможно, перейди в помещение без окон, подальше от наружных стен.</li>
+
+  </ol>
+
+  <p class="muted">Не приближайся к обломкам и подозрительным предметам. Сообщи взрослым об опасности.</p>
+
+ </div>
+
+ <div class="panel">
+
+  <h3>❄️ Что делать при гололёде?</h3>
+
+  <p class="muted">Правила безопасного передвижения зимой.</p>
+
+  <ol>
+
+   <li>Надевай обувь с нескользящей подошвой.</li>
+
+   <li>Передвигайся медленно, небольшими шагами.</li>
+
+   <li>Не бегай и не торопись на скользких участках.</li>
+
+   <li>Обходи обледеневшие лестницы и крутые склоны.</li>
+
+   <li>Не держи руки в карманах — так легче удерживать равновесие.</li>
+
+   <li>Переходи дорогу осторожно: автомобилям на льду нужно больше времени для остановки.</li>
+
+   <li>Держись подальше от крыш, с которых могут падать снег и сосульки.</li>
+
+  </ol>
+
+  <p class="muted">Если улицы сильно обледенели, по возможности отложи необязательную прогулку.</p>
+
+ </div>
+
+ <div class="panel">
+
+  <h3>🆘 Если случилась опасная ситуация</h3>
+
+  <p>Обратись к взрослому, которому доверяешь. При непосредственной угрозе жизни позвони в местную экстренную службу.</p>
+
+ </div>`;
+
+}
+
+function countries(p){
+
+ p.innerHTML+=`<div class="panel">
+
+ <input id="countryName" placeholder="Введи название страны">
+
+ <button class="primary" onclick="findCountry()">Найти</button>
+
+ <div id="countryResult"></div></div>`;
+
+}
+
+function findCountry(){
+
+ const n=document.getElementById("countryName").value.trim();
+
+ if(!n)return;
+
+ document.getElementById("countryResult").innerHTML=
+
+ `<h3>${n}</h3><a target="_blank" href="https://ru.wikipedia.org/wiki/${encodeURIComponent(n)}">Подробнее о стране ↗</a>`;
+
+}
+
+function tic(p){
+
+ p.innerHTML+=`<p>Ты играешь за ❌, компьютер — за ⭕.</p>
+
+ <div class="board" id="ticboard"></div><p id="ticstatus"></p>
+
+ <button class="primary" onclick="openSection('tic')">Новая игра</button>`;
+
+ let b=Array(9).fill("");
+
+ function result(){
+
+  for(let a of [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]])
+
+   if(b[a[0]]&&b[a[0]]===b[a[1]]&&b[a[1]]===b[a[2]])return b[a[0]];
+
+  return b.every(Boolean)?"draw":null;
+
+ }
+
+ function draw(){
+
+  document.getElementById("ticboard").innerHTML=b.map((v,i)=>
+
+   `<button class="cell" data-i="${i}">${v}</button>`).join("");
+
+  document.querySelectorAll("#ticboard button").forEach(btn=>{
+
+   btn.onclick=()=>move(Number(btn.dataset.i));
+
+  });
+
+  let r=result();
+
+  document.getElementById("ticstatus").textContent=
+
+   r==="❌"?"Ты победил! 🎉":r==="⭕"?"Компьютер победил!":r==="draw"?"Ничья!":"Твой ход";
+
+ }
+
+ function move(i){
+
+  if(b[i]||result())return;
+
+  b[i]="❌";
+
+  if(!result()){
+
+   let free=b.map((v,i)=>v?null:i).filter(v=>v!==null);
+
+   if(free.length)b[free[Math.floor(Math.random()*free.length)]]="⭕";
+
+  }
+
+  draw();
+
+ }
+
+ draw();
+
+}
+
+function clocks(p){
+
+ p.innerHTML+=`<div id="clocklist"></div>`;
+
+ const zones=[
+
+ ["Москва","Europe/Moscow"],
+
+ ["Екатеринбург","Asia/Yekaterinburg"],
+
+ ["Ижевск","Europe/Moscow"],
+
+ ["Омск","Asia/Omsk"],
+
+ ["Калининград","Europe/Kaliningrad"]
+
+ ];
+
+ function update(){
+
+  document.getElementById("clocklist").innerHTML=zones.map(z=>
+
+   `<div class="panel"><b>${z[0]}</b><h2>${new Intl.DateTimeFormat("ru-RU",{timeZone:z[1],hour:"2-digit",minute:"2-digit",second:"2-digit"}).format(new Date())}</h2></div>`).join("");
+
+ }
+
+ update();setInterval(update,1000);
+
+}
+
+function calendar(p){
+
+ p.innerHTML+=`<div class="panel"><input type="date"><p>Выбери дату в календаре.</p></div>`;
+
+}
+
+function flags(p){
+
+ const data=[["🇷🇺","Россия"],["🇫🇷","Франция"],["🇯🇵","Япония"],["🇧🇷","Бразилия"],["🇩🇪","Германия"],["🇮🇹","Италия"]];
+
+ const item=data[Math.floor(Math.random()*data.length)];
+
+ p.innerHTML+=`<div class="panel"><div style="font-size:80px">${item[0]}</div>
+
+ <input id="flagAnswer" placeholder="Название страны">
+
+ <button class="primary" onclick="checkFlag('${item[1]}')">Ответить</button>
+
+ <p id="flagResult"></p><button onclick="openSection('flags')">Следующий флаг</button></div>`;
+
+}
+
+function checkFlag(a){
+
+ const v=document.getElementById("flagAnswer").value.trim().toLowerCase();
+
+ document.getElementById("flagResult").textContent=v===a.toLowerCase()?"Правильно! 🎉":"Не совсем. Попробуй ещё раз!";
+
+}
+
+function atlas(p){
+
+ p.innerHTML+=`<div class="panel"><p>🇷🇺 Россия</p><p>🇩🇪 Германия</p><p>🇫🇷 Франция</p><p>🇯🇵 Япония</p><p>🇧🇷 Бразилия</p><p>🇺🇸 США</p><p>🇨🇦 Канада</p><p>🇮🇹 Италия</p><p>🇪🇸 Испания</p><p>🇬🇧 Великобритания</p></div>`;
+
+}
+
+function sudoku(p){
+
+ p.innerHTML+=`<div class="panel"><p>Мини-игра: введи числа в клетки.</p><div class="grid" id="sudokuBoard"></div></div>`;
+
+ document.getElementById("sudokuBoard").innerHTML=Array.from({length:9},(_,i)=>
+
+ `<input maxlength="1" inputmode="numeric" placeholder="${i+1}" style="text-align:center">`).join("");
+
+}
+
+function mines(p){
+
+ p.innerHTML+=`<div class="panel"><p>Найди безопасные клетки!</p><div class="grid" id="mineBoard"></div><button class="primary" onclick="openSection('mines')">Заново</button></div>`;
+
+ let bombs=new Set();
+
+ while(bombs.size<5)bombs.add(Math.floor(Math.random()*25));
+
+ document.getElementById("mineBoard").innerHTML=Array.from({length:25},(_,i)=>
+
+ `<button class="cell" style="height:48px" onclick="this.textContent='${bombs.has(i)?"💣":"🌱"}';this.disabled=true">${"?"}</button>`).join("");
+
+}
+
+function checkers(p){
+
+ p.innerHTML+=`<div class="panel"><p>Игровое поле для шашек.</p><div class="grid" id="checkBoard"></div></div>`;
+
+ document.getElementById("checkBoard").innerHTML=Array.from({length:64},(_,i)=>
+
+ `<div style="height:35px;background:${(Math.floor(i/8)+i%8)%2?"#52647c":"#dce4ed"}"></div>`).join("");
+
+}
+
+function snake(p){
+
+ p.innerHTML+=`<div class="panel"><canvas id="snakeCanvas" width="300" height="300" style="max-width:100%;background:#142238"></canvas>
+
+ <p id="snakeScore">Счёт: 0</p>
+
+ <div><button onclick="snakeDir(0,-1)">⬆️</button></div>
+
+ <div><button onclick="snakeDir(-1,0)">⬅️</button><button onclick="snakeDir(0,1)">⬇️</button><button onclick="snakeDir(1,0)">➡️</button></div></div>`;
+
+ let c=document.getElementById("snakeCanvas"),ctx=c.getContext("2d");
+
+ let x=5,y=5,dx=1,dy=0,score=0,food={x:10,y:10};
+
+ window.snakeDir=(a,b)=>{if(a!==-dx||b!==-dy){dx=a;dy=b}};
+
+ let timer=setInterval(()=>{
+
+  x+=dx;y+=dy;
+
+  if(x<0||y<0||x>14||y>14){clearInterval(timer);return}
+
+  if(x===food.x&&y===food.y){score++;food={x:Math.floor(Math.random()*15),y:Math.floor(Math.random()*15)}}
+
+  ctx.clearRect(0,0,300,300);
+
+  ctx.fillStyle="#35d084";ctx.fillRect(x*20,y*20,18,18);
+
+  ctx.fillStyle="#ff5252";ctx.fillRect(food.x*20,food.y*20,18,18);
+
+  document.getElementById("snakeScore").textContent="Счёт: "+score;
+
+ },250);
+
+}
+
+function game2048(p){
+
+ let b=Array(16).fill(0);b[0]=2;b[5]=2;
+
+ p.innerHTML+=`<div class="panel"><div class="gamegrid" id="grid2048"></div>
+
+ <p>Используй стрелки ниже.</p>
+
+ <button onclick="move2048('left')">⬅️</button>
+
+ <button onclick="move2048('up')">⬆️</button>
+
+ <button onclick="move2048('down')">⬇️</button>
+
+ <button onclick="move2048('right')">➡️</button></div>`;
+
+ function draw(){document.getElementById("grid2048").innerHTML=b.map(v=>`<div class="gamecell">${v||""}</div>`).join("")}
+
+ window.move2048=(dir)=>{
+
+  for(let r=0;r<4;r++){
+
+   let ids=dir==="left"||dir==="right"?[0,1,2,3].map(c=>r*4+(dir==="right"?3-c:c)):
+
+    [0,1,2,3].map(c=>(dir==="down"?3-c:c)*4+r);
+
+   let a=ids.map(i=>b[i]).filter(Boolean);
+
+   for(let j=0;j<a.length-1;j++)if(a[j]===a[j+1]){a[j]*=2;a.splice(j+1,1)}
+
+   a=[...a,...Array(4-a.length).fill(0)];
+
+   ids.forEach((id,j)=>b[id]=a[j]);
+
+  }
+
+  let free=b.map((v,i)=>v?null:i).filter(v=>v!==null);
+
+  if(free.length)b[free[Math.floor(Math.random()*free.length)]]=2;
+
+  draw();
+
+ };
+
+ draw();
+
+}
+
+function settings(){
+
+ showPage("⚙️ Настройки",`
+
+ <div class="panel"><h3>🎨 Оформление</h3>
+
+ <button class="primary" onclick="document.body.classList.toggle('light')">Светлая / тёмная тема</button></div>
+
+ <div class="panel"><h3>🌐 Язык</h3>
+
+ <button class="primary" onclick="setLanguage('ru')">Русский</button>
+
+ <button class="primary" onclick="setLanguage('en')">English</button>
+
+ <p class="muted">Переключатель меняет основные надписи. Полный перевод всех разделов пока не подключён.</p></div>
+
+ <div class="panel"><h3>ℹ️ Об АЛЬФМОГ</h3><p>Твой цифровой мир.</p><p>Версия 2.0</p></div>`);
+
+}
+
+function setLanguage(lang){
+
+ language=lang;
+
+ document.documentElement.lang=lang;
+
+ document.getElementById("subtitle").textContent=lang==="ru"?"Твой цифровой мир":"Your digital world";
+
+ document.getElementById("welcome").textContent=lang==="ru"?"Добро пожаловать в АЛЬФМОГ!":"Welcome to ALFMOG!";
+
+ document.getElementById("description").textContent=lang==="ru"?"Знания, игры, открытия и полезные инструменты.":"Knowledge, games, discoveries and useful tools.";
+
+ document.getElementById("search").placeholder=lang==="ru"?"🔎 Поиск разделов...":"🔎 Search sections...";
+
+}
+
+renderTiles();
+
+</script>
+
+</body>
+
+</html>
